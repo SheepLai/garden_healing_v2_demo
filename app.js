@@ -229,15 +229,6 @@ function renderInteractionPage() {
         <button class="back-btn" onclick="confirmLeaveInteraction()">返回温室</button>
       </div>
 
-
-      ${interaction.canBloom && interaction.flowStatus !== "flower" ? `
-        <aside class="bloom-panel">
-          <h3>这朵花已经有了轮廓</h3>
-          <p>你可以继续补充，也可以先把这次整理成一朵花。开花后会出现推荐作品卡片。</p>
-          <button class="primary-btn" onclick="bloomInteraction()">整理成花</button>
-        </aside>
-      ` : ""}
-
       <section class="dialog-box">
         <div id="chatList" class="chat-list">
           ${interaction.messages.map(msg => `
@@ -245,8 +236,24 @@ function renderInteractionPage() {
           `).join("")}
         </div>
         <div class="input-row">
-          <input id="userInput" placeholder="继续说说这里发生了什么……" onkeydown="handleInputKeydown(event)" ${interaction.flowStatus === "flower" ? "disabled" : ""} />
-          <button class="primary-btn" onclick="sendMessage()" ${interaction.flowStatus === "flower" ? "disabled" : ""}>发送</button>
+          <input
+            id="userInput"
+            placeholder="继续说说这里发生了什么……"
+            onkeydown="handleInputKeydown(event)"
+            ${interaction.flowStatus === "flower" ? "disabled" : ""}
+          />
+          <button
+            class="primary-btn"
+            onclick="sendMessage()"
+            ${interaction.flowStatus === "flower" ? "disabled" : ""}
+          >发送</button>
+          ${interaction.canBloom && interaction.flowStatus !== "flower" ? `
+            <button
+              class="bloom-inline-btn"
+              onclick="bloomInteraction()"
+              title="这朵花已经有了轮廓。你可以继续补充，也可以先把这次整理成一朵花。开花后会出现推荐作品卡片。"
+            >整理成花</button>
+          ` : ""}
         </div>
       </section>
     </main>
@@ -285,7 +292,6 @@ function sendMessage() {
   interaction.canBloom = response.canBloom;
 
   renderInteractionPage();
-  switchPlantStage(response.stage);
 }
 
 function mockAssistantResponse(text, state) {
@@ -322,9 +328,7 @@ function mockAssistantResponse(text, state) {
 function switchPlantStage(stage) {
   const image = document.getElementById("interactionStageBg");
   if (!image) return;
-
   image.classList.add("switching");
-
   setTimeout(() => {
     image.src = ASSETS.plant[stage];
     image.classList.remove("switching");
@@ -345,7 +349,6 @@ function bloomInteraction() {
 
   recommendationDraft = buildRecommendationDraft(interaction);
   renderInteractionPage();
-  switchPlantStage("flower");
   renderRecommendationModal();
 }
 
